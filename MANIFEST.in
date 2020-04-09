@@ -1,0 +1,4 @@
+include MANIFEST.in
+include README.md
+recursive-include requirements *.txt
+recursive-include kubesync *.py

@@ -1,0 +1,12 @@
+click
+tabulate
+watchdog
+docker
+
+requests
+kubernetes
+pyyaml
+python-dateutil
+google-auth
+
+minislite
