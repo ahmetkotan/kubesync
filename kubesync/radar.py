@@ -1,12 +1,13 @@
 # Standard Library
 import time
 from typing import Dict, List
+from pathlib import Path
 
 # First Party
 import docker
 from kubesync.dock import DockerSync
 from kubesync.kube import KubeManager
-from kubesync.colors import print_green, print_yellow
+from kubesync.colors import print_red, print_green, print_yellow
 from kubesync.models import Sync, WatcherStatus
 from watchdog.events import (
     FileMovedEvent,
@@ -34,6 +35,10 @@ class Watcher:
 
                 if sync.connected == 0 and container:
                     print_green(f"{sync.selector}::{sync.container_name} container found.")
+                    if not Path(sync.source_path).exists():
+                        print_red(f"{sync.source_path} path not found.")
+                        continue
+
                     sync.container_id = container.container_id
                     sync.connected = True
                     sync.save()
@@ -113,7 +118,7 @@ class Handler(FileSystemEventHandler):
     def on_created(self, event: FileCreatedEvent):
         self.reloading()
         for docker_sync in self.docker_sync_list:
-            docker_sync.move_object(event.src_path, event.is_directory)
+            docker_sync.move_object(event.src_path)
         self.done()
 
     def on_modified(self, event: FileModifiedEvent):
@@ -122,13 +127,13 @@ class Handler(FileSystemEventHandler):
 
         self.reloading()
         for docker_sync in self.docker_sync_list:
-            docker_sync.move_object(event.src_path, event.is_directory)
+            docker_sync.move_object(event.src_path)
         self.done()
 
     def on_moved(self, event: FileMovedEvent):
         self.reloading()
         for docker_sync in self.docker_sync_list:
-            docker_sync.move_object(event.dest_path, event.is_directory)
+            docker_sync.move_object(event.dest_path)
             docker_sync.delete_object(event.src_path, event.is_directory)
         self.done()
 

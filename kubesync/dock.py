@@ -1,9 +1,8 @@
 # Standard Library
-import os
 from pathlib import Path
 
 # First Party
-from docker import DockerClient
+from docker import DockerClient, errors
 from kubesync.utils import create_archive
 from kubesync.models import Sync
 
@@ -36,31 +35,34 @@ class DockerSync:
         container_id = container_id[:10]
         return container_id
 
-    def move_object(self, src_path, is_directory) -> bool:
-        archive = create_archive(src_path)
+    def move_object(self, source) -> bool:
+        archive = create_archive(source)
         if archive is None:
             return False
 
-        abs_path = str(Path(self.sync.source_path))
-        remote_abs_path = str(Path(self.sync.destination_path))
+        abs_path = Path(self.sync.source_path)
+        remote_abs_path = Path(self.sync.destination_path)
+        src_path = Path(source)
 
-        relative_path = src_path.replace(abs_path + "/", "")
-        dst_path = os.path.join(remote_abs_path, relative_path)
-        if not is_directory:
-            dst_path = str(Path(dst_path).parent)
+        relative_path = src_path.relative_to(abs_path)
+        dst_path = remote_abs_path.joinpath(relative_path).parent
 
-        return self.container.put_archive(data=archive, path=dst_path)
+        try:
+            return self.container.put_archive(data=archive, path=str(dst_path))
+        except errors.NotFound:
+            return False
 
-    def delete_object(self, src_path, is_directory) -> str:
+    def delete_object(self, source, is_directory) -> str:
         command = ["/bin/rm"]
         if is_directory:
             command.append("-r")
 
-        abs_path = str(Path(self.sync.source_path))
-        remote_abs_path = str(Path(self.sync.destination_path))
+        abs_path = Path(self.sync.source_path)
+        remote_abs_path = Path(self.sync.destination_path)
+        src_path = Path(source)
 
-        relative_path = src_path.replace(abs_path + "/", "")
-        dst_path = os.path.join(remote_abs_path, relative_path)
-        command.append(dst_path)
+        relative_path = src_path.relative_to(abs_path)
+        dst_path = remote_abs_path.joinpath(relative_path)
+        command.append(str(dst_path))
 
         return self.container.exec_run(command)
