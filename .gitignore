@@ -12,12 +12,11 @@ __pycache__/
 
 .mypy_cache/
 
-mini.py
-
 *.egg-info/
 dist/
 build/
 
 *.pid
+*.log
 
 k.py

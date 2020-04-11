@@ -1,9 +1,11 @@
 # Standard Library
 from pathlib import Path
 
-# First Party
+# Third Party
 from docker import DockerClient, errors
-from kubesync.utils import create_archive
+
+# First Party
+from kubesync.utils import read_archive, create_archive, get_container_short_id
 from kubesync.models import Sync
 
 
@@ -11,9 +13,7 @@ class DockerSync:
     def __init__(self, docker_client: DockerClient, sync: Sync, standalone=False):
         self.sync = sync
         self.client = docker_client
-        self.container_id = sync.container_id
-
-        self.container = self.client.containers.get(self.get_short_id())
+        self.container = self.client.containers.get(get_container_short_id(sync.container_id))
 
         remote_app_directory_name = Path(self.sync.destination_path).name
         remote_parent_directory = str(Path(self.sync.destination_path).parent)
@@ -22,22 +22,27 @@ class DockerSync:
             self.sync.synced = 0
             self.sync.save()
 
-        archive = create_archive(self.sync.source_path, remote_app_directory_name)
-        if archive:
-            self.container.put_archive(data=archive, path=remote_parent_directory)
+        stream, archive = create_archive(self.sync.source_path, remote_app_directory_name)
+        old_archive = read_archive(self.client, sync.container_id, sync.destination_path, sync.source_path)
+
+        if old_archive and archive:
+            remote_file_list = set(old_archive.getnames())
+            host_file_list = set(archive.getnames())
+            files_diff = remote_file_list.difference(host_file_list)
+            for file in files_diff:
+                member = old_archive.getmember(file)
+                self.delete_object(member.name, member.isdir(), relative_path=remote_app_directory_name)
+
+        if stream:
+            self.container.put_archive(data=stream, path=remote_parent_directory)
 
         if not standalone:
             self.sync.synced = 1
             self.sync.save()
 
-    def get_short_id(self) -> str:
-        container_id = self.container_id.replace("docker://", "")
-        container_id = container_id[:10]
-        return container_id
-
     def move_object(self, source) -> bool:
-        archive = create_archive(source)
-        if archive is None:
+        stream, _ = create_archive(source)
+        if stream is None:
             return False
 
         abs_path = Path(self.sync.source_path)
@@ -48,16 +53,19 @@ class DockerSync:
         dst_path = remote_abs_path.joinpath(relative_path).parent
 
         try:
-            return self.container.put_archive(data=archive, path=str(dst_path))
+            return self.container.put_archive(data=stream, path=str(dst_path))
         except errors.NotFound:
             return False
 
-    def delete_object(self, source, is_directory) -> str:
+    def delete_object(self, source, is_directory, relative_path=None) -> str:
         command = ["/bin/rm"]
         if is_directory:
             command.append("-r")
 
-        abs_path = Path(self.sync.source_path)
+        if relative_path:
+            abs_path = Path(relative_path)
+        else:
+            abs_path = Path(self.sync.source_path)
         remote_abs_path = Path(self.sync.destination_path)
         src_path = Path(source)
 

@@ -5,7 +5,9 @@ disable = missing-module-docstring,
     invalid-name,
     too-many-arguments,
     too-few-public-methods,
-    consider-iterating-dictionary
+    consider-iterating-dictionary,
+    unnecessary-comprehension,
+    bad-continuation
 
 [FORMAT]
 max-line-length=119

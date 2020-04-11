@@ -5,10 +5,6 @@ repos:
         -   id: check-merge-conflict
         -   id: debug-statements
         -   id: detect-private-key
-  -   repo: https://github.com/pre-commit/mirrors-isort
-      rev: 'v4.3.21'
-      hooks:
-        -   id: isort
   -   repo: https://github.com/psf/black
       rev: 19.3b0
       hooks:
@@ -24,6 +20,11 @@ repos:
             pass_filenames: false
         -   id: pylint
             name: pylint
-            entry: pylint minislite
+            entry: pylint kubesync
+            language: system
+            pass_filenames: false
+        -   id: isort
+            name: isort
+            entry: isort -rc .
             language: system
             pass_filenames: false

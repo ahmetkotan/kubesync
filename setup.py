@@ -1,8 +1,7 @@
 # First Party
-# Third Party
 from setuptools import setup
 
-VERSION = "0.9b0"
+VERSION = "0.9b1"
 
 
 def get_requirements():

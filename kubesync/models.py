@@ -1,5 +1,4 @@
 # Third Party
-# First Party
 from minislite import DatabaseField, MiniSLiteModel
 
 

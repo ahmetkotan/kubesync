@@ -2,18 +2,20 @@
 import os
 import sys
 
-# First Party
+# Third Party
 import click
 import docker
 from tabulate import tabulate
 from minislite import MiniSLiteDb
+from minislite.exceptions import AlreadyExistsError, RecordNotFoundError
+
+# First Party
 from kubesync.dock import DockerSync
 from kubesync.kube import KubeManager
 from kubesync.radar import Watcher
-from kubesync.utils import get_random_name, get_kubesync_directory
+from kubesync.utils import read_archive, get_random_name, get_kubesync_directory
 from kubesync.colors import print_red, print_green
 from kubesync.models import Sync, WatcherStatus
-from minislite.exceptions import AlreadyExistsError, RecordNotFoundError
 
 
 @click.group()
@@ -91,6 +93,22 @@ def sync(selector, container, src, dest):
 
         docker_client = docker.from_env()
         DockerSync(docker_client=docker_client, sync=temp_sync, standalone=True)
+    else:
+        print_red(f"{selector}::{container} not found in kube pods.")
+        sys.exit(1)
+
+
+@main.command()
+@click.option("--selector", "-l", required=True)
+@click.option("--container", "-c", required=True)
+@click.option("--src", "-s", required=True)
+@click.option("--dest", "-d", required=True)
+def clone(selector, container, src, dest):
+    kube = KubeManager()
+    container = kube.get_container(selector=selector, container_name=container)
+    if container:
+        docker_client = docker.from_env()
+        read_archive(docker_client, container.container_id, dest, src, extract=True)
     else:
         print_red(f"{selector}::{container} not found in kube pods.")
         sys.exit(1)

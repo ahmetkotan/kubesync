@@ -3,20 +3,16 @@ import time
 from typing import Dict, List
 from pathlib import Path
 
-# First Party
+# Third Party
 import docker
+from watchdog.events import FileMovedEvent, FileDeletedEvent, FileModifiedEvent, FileSystemEventHandler
+from watchdog.observers import Observer
+
+# First Party
 from kubesync.dock import DockerSync
 from kubesync.kube import KubeManager
 from kubesync.colors import print_red, print_green, print_yellow
 from kubesync.models import Sync, WatcherStatus
-from watchdog.events import (
-    FileMovedEvent,
-    FileCreatedEvent,
-    FileDeletedEvent,
-    FileModifiedEvent,
-    FileSystemEventHandler,
-)
-from watchdog.observers import Observer
 
 
 class Watcher:
@@ -115,29 +111,27 @@ class Handler(FileSystemEventHandler):
             sync.synced = True
             sync.save()
 
-    def on_created(self, event: FileCreatedEvent):
-        self.reloading()
-        for docker_sync in self.docker_sync_list:
-            docker_sync.move_object(event.src_path)
-        self.done()
-
     def on_modified(self, event: FileModifiedEvent):
-        if event.is_directory:
+        if not event.is_directory:
             return
-
+        print_red("modified %s is dir: %s is synt: %s" % (event.src_path, event.is_directory, event.is_synthetic))
         self.reloading()
         for docker_sync in self.docker_sync_list:
             docker_sync.move_object(event.src_path)
         self.done()
 
     def on_moved(self, event: FileMovedEvent):
+        print_red(
+            "moved %s to %s is dir: %s is synt: %s"
+            % (event.src_path, event.dest_path, event.is_directory, event.is_synthetic)
+        )
         self.reloading()
         for docker_sync in self.docker_sync_list:
-            docker_sync.move_object(event.dest_path)
             docker_sync.delete_object(event.src_path, event.is_directory)
         self.done()
 
     def on_deleted(self, event: FileDeletedEvent):
+        print_red("delete %s is dir: %s is synt: %s" % (event.src_path, event.is_directory, event.is_synthetic))
         self.reloading()
         for docker_sync in self.docker_sync_list:
             docker_sync.delete_object(event.src_path, event.is_directory)
