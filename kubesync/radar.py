@@ -112,26 +112,18 @@ class Handler(FileSystemEventHandler):
             sync.save()
 
     def on_modified(self, event: FileModifiedEvent):
-        if not event.is_directory:
-            return
-        print_red("modified %s is dir: %s is synt: %s" % (event.src_path, event.is_directory, event.is_synthetic))
         self.reloading()
         for docker_sync in self.docker_sync_list:
             docker_sync.move_object(event.src_path)
         self.done()
 
     def on_moved(self, event: FileMovedEvent):
-        print_red(
-            "moved %s to %s is dir: %s is synt: %s"
-            % (event.src_path, event.dest_path, event.is_directory, event.is_synthetic)
-        )
         self.reloading()
         for docker_sync in self.docker_sync_list:
             docker_sync.delete_object(event.src_path, event.is_directory)
         self.done()
 
     def on_deleted(self, event: FileDeletedEvent):
-        print_red("delete %s is dir: %s is synt: %s" % (event.src_path, event.is_directory, event.is_synthetic))
         self.reloading()
         for docker_sync in self.docker_sync_list:
             docker_sync.delete_object(event.src_path, event.is_directory)
