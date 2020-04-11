@@ -36,6 +36,7 @@ Kubesync post-sync
 ``Ctrl+C`` for exit from watcher.
 
 
-## Live
-[![asciicast](https://asciinema.org/a/318292.svg)](https://asciinema.org/a/318292)
-[![asciicast](https://asciinema.org/a/318293.svg)](https://asciinema.org/a/318293)
+## Demo
+
+![kubesync-watcher](casts/kubesync-watcher.gif)
+![kubesync-tool](casts/kubesync-tool.gif)

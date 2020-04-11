@@ -21,8 +21,10 @@ python setup.py install
 ## Usage
 First, you must start watcher with ``kubesync watch`` command and then create selectors with ``kubesync create`` command.  
 
-[![asciicast](https://asciinema.org/a/318292.svg)](https://asciinema.org/a/318292)
-[![asciicast](https://asciinema.org/a/318293.svg)](https://asciinema.org/a/318293)
+## Demo
+
+![kubesync-watcher](examples/casts/kubesync-watcher.gif)
+![kubesync-tool](examples/casts/kubesync-tool.gif)
 
 ### Watch
 Start watching for real-time synchronizations.  

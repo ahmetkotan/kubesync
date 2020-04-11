@@ -1,7 +1,7 @@
 # First Party
 from setuptools import setup
 
-VERSION = "0.9b1"
+VERSION = "0.9b2"
 
 
 def get_requirements():
@@ -15,7 +15,7 @@ setup(
     version=VERSION,
     packages=["kubesync"],
     install_requires=get_requirements(),
-    package_data={"kubesync": ["requirements/base.txt"]},
+    package_data={"kubesync": ["requirements/base.txt", "requirements/alpha.txt"]},
     url="https://github.com/ahmetkotan/kubesync",
     license="",
     author="ahmetkotan",

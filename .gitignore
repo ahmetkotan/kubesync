@@ -20,3 +20,4 @@ build/
 *.log
 
 k.py
+examples/casts/*.cast
