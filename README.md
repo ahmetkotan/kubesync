@@ -64,7 +64,7 @@ kubesync sync --selector=app=kubesync-example -c nginx -s $(pwd)/examples/nginx-
 ```
 
 ### Clone
-Use clone If you want to reverse synchronization. It's mean, this container path synchronizations to your host path.
+Use clone If you want to reverse synchronization. It's mean, this container path synchronizations to your host path.  
 ``kubesync clone --help``
 * **-l, --selector** Pod label selector parameter
 * **-c, --container** Pod container name

@@ -75,11 +75,7 @@ class Watcher:
                     else:
                         print_yellow(f"Stop handler for {sync.source_path}")
 
-            try:
-                time.sleep(1)
-            except (KeyboardInterrupt, RuntimeError):
-                self.stop()
-                break
+            time.sleep(1)
 
     def stop(self) -> None:
         print_yellow("Stop watching.")

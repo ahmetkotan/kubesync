@@ -1,6 +1,7 @@
 include MANIFEST.in
 include README.md
 include CONTRIBUTING.md
+include VERSION
 recursive-include requirements *.txt
 recursive-include kubesync *.py
-recursive-include examples *
+recursive-include examples

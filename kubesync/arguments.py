@@ -26,6 +26,11 @@ def main():
 
 
 @main.command()
+def version():
+    print_green("12")
+
+
+@main.command()
 @click.option("--selector", "-l", required=True)
 @click.option("--container", "-c", required=True)
 @click.option("--src", "-s", required=True)
@@ -132,7 +137,10 @@ def watch(pid_file=None):
     print_green("PID saved.")
 
     watcher = Watcher()
-    watcher.run()
+    try:
+        watcher.run()
+    except (KeyboardInterrupt, RuntimeError):
+        watcher.stop()
 
 
 def execute():

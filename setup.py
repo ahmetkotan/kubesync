@@ -1,18 +1,20 @@
 # First Party
 from setuptools import setup
 
-VERSION = "0.9b3"
+
+def get_version():
+    return open("VERSION").read().strip()
 
 
 def get_requirements():
-    if "a" in VERSION:
+    if "a" in get_version():
         return open("requirements/alpha.txt").read().splitlines()
     return open("requirements/base.txt").read().splitlines()
 
 
 setup(
     name="kubesync",
-    version=VERSION,
+    version=get_version(),
     packages=["kubesync"],
     install_requires=get_requirements(),
     package_data={"kubesync": ["requirements/base.txt", "requirements/alpha.txt"]},
