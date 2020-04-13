@@ -1,5 +1,5 @@
 # Kubesync
-Kubesync synchronization tool between kubernetes pods and your host.
+Kubesync synchronization tool between kubernetes pods or pods and your host.
 
 ## Install
 ### From Pypi
@@ -20,6 +20,8 @@ python setup.py install
 
 ## Usage
 First, you must start watcher with ``kubesync watch`` command and then create selectors with ``kubesync create`` command.  
+If you want to ignoring some directory or files, create ``.kubesyncignore`` file like ``.gitignore`` in source path.
+
 
 ## Demo
 

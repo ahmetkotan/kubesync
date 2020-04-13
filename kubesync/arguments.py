@@ -13,9 +13,11 @@ from minislite.exceptions import AlreadyExistsError, RecordNotFoundError
 from kubesync.dock import DockerSync
 from kubesync.kube import KubeManager
 from kubesync.radar import Watcher
-from kubesync.utils import read_archive, get_random_name, get_kubesync_directory
+from kubesync.utils import read_archive, get_random_name, load_ignore_patterns, get_kubesync_directory
 from kubesync.colors import print_red, print_green
 from kubesync.models import Sync, WatcherStatus
+
+KUBESYNC_IGNORE_PATTERNS = [".git/"]
 
 
 @click.group()
@@ -91,6 +93,7 @@ def sync(selector, container, src, dest):
         temp_sync.destination_path = dest
         temp_sync.container_id = container.container_id
 
+        load_ignore_patterns(source=src)
         docker_client = docker.from_env()
         DockerSync(docker_client=docker_client, sync=temp_sync, standalone=True)
     else:
@@ -107,6 +110,7 @@ def clone(selector, container, src, dest):
     kube = KubeManager()
     container = kube.get_container(selector=selector, container_name=container)
     if container:
+        load_ignore_patterns(source=src)
         docker_client = docker.from_env()
         read_archive(docker_client, container.container_id, dest, src, extract=True)
     else:

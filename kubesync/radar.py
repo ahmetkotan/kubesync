@@ -94,7 +94,9 @@ class Watcher:
 
 class Handler(FileSystemEventHandler):
     def __init__(self, docker_client: docker.DockerClient, sync_list: List[Sync]):
-        self.docker_sync_list: List[DockerSync] = [DockerSync(docker_client, sync) for sync in sync_list]
+        self.docker_sync_list: List[DockerSync] = [
+            DockerSync(docker_client=docker_client, sync=sync) for sync in sync_list
+        ]
         self.sync_list = sync_list
 
         print_green(f"Handling {self.sync_list[0].source_path} directory.")
