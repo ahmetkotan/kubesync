@@ -5,7 +5,7 @@ from pathlib import Path
 from docker import DockerClient, errors
 
 # First Party
-from kubesync.utils import read_archive, create_archive, get_container_short_id
+from kubesync.utils import read_archive, create_archive, load_ignore_patterns, get_container_short_id
 from kubesync.models import Sync
 
 
@@ -22,9 +22,12 @@ class DockerSync:
             self.sync.synced = 0
             self.sync.save()
 
+        load_ignore_patterns(self.sync.source_path)
         stream, archive = create_archive(self.sync.source_path, remote_app_directory_name)
-        old_archive = read_archive(self.client, sync.container_id, sync.destination_path, sync.source_path)
+        if stream:
+            self.container.put_archive(data=stream, path=remote_parent_directory)
 
+        old_archive = read_archive(self.client, sync.container_id, sync.destination_path, sync.source_path)
         if old_archive and archive:
             remote_file_list = set(old_archive.getnames())
             host_file_list = set(archive.getnames())
@@ -32,9 +35,6 @@ class DockerSync:
             for file in files_diff:
                 member = old_archive.getmember(file)
                 self.delete_object(member.name, member.isdir(), relative_path=remote_app_directory_name)
-
-        if stream:
-            self.container.put_archive(data=stream, path=remote_parent_directory)
 
         if not standalone:
             self.sync.synced = 1
